@@ -1,0 +1,50 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: UserMicroService
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: local
+  datasource:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:tcp://localhost/~/test
+    username: sa
+    password:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    database-platform: org.hibernate.dialect.H2Dialect
+  #spring config server ??, yml ?? ??
+  cloud:
+    config:
+      uri: http://localhost:8888
+      name: ecommerce
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+welcome:
+  message: This is simple micro user-service
+
+#actuator?? ??? endpoints
+#actuator? ???? ??? config ???? ?? ??? ??????
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans

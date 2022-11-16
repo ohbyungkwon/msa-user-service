@@ -1,0 +1,40 @@
+package com.msa.usermicroservice.advice;
+
+import com.msa.usermicroservice.dto.ResponseComDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
+@ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class BizExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ResponseComDto> exceptionHandler(Exception e){
+        List<String> exceptionParts = Arrays.asList(e.getClass().getName().split("\\."));
+        String exceptionName = exceptionParts.get(exceptionParts.size() - 1);
+
+        log.info("#############################");
+        log.info("Exception: {}", exceptionName);
+        log.info("#############################");
+
+        HttpStatus code = HttpStatus.INTERNAL_SERVER_ERROR;
+        String message = "본사로 문의 바랍니다.";
+        if(exceptionName.equals("BadReqException")){
+            code = HttpStatus.BAD_REQUEST;
+            message = e.getMessage();
+        }
+
+        //Exception 처리 로직 이어 작성
+        ResponseComDto body = new ResponseComDto(null, message);
+
+        return new ResponseEntity<>(body, code);
+    }
+}

@@ -1,0 +1,110 @@
+buildscript {
+    ext {
+        springBootVersion = '2.4.1'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("gradle.plugin.com.ewerk.gradle.plugins:querydsl-plugin:1.0.10")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.4.1'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'java'
+}
+
+apply plugin: 'eclipse'
+apply plugin: "com.ewerk.gradle.plugins.querydsl"
+
+group = 'com.msa'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "2020.0.6")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-hateoas'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.7.0'
+
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.5.0'
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.5.0'
+    compile("org.springframework.boot:spring-boot-starter-aop")
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.4.1'
+
+    compile('mysql:mysql-connector-java')
+    runtimeOnly 'com.h2database:h2'
+    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly('org.springframework.boot:spring-boot-configuration-processor')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation("org.junit.vintage:junit-vintage-engine") {
+        exclude group: "org.hamcrest", module: "hamcrest-core"
+    }
+
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-config'
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-bootstrap'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5' //querydsl 추가
+    implementation 'com.querydsl:querydsl-jpa' //querydsl 추가
+    implementation 'com.querydsl:querydsl-apt' //querydsl 추가
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+//querydsl 추가
+//def querydslDir = 'src/main/generated'
+def querydslDir = "$buildDir/generated/querydsl"
+querydsl {
+    library = "com.querydsl:querydsl-apt"
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', querydslDir]
+        }
+    }
+}
+compileQuerydsl{
+    options.annotationProcessorPath = configurations.querydsl
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
+test {
+    useJUnitPlatform()
+}
