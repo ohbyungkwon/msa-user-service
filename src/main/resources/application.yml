@@ -8,11 +8,6 @@ spring:
     allow-bean-definition-overriding: true
   profiles:
     active: local
-  datasource:
-    driverClassName: org.h2.Driver
-    url: jdbc:h2:tcp://localhost/~/test
-    username: sa
-    password:
   jpa:
     properties:
       hibernate:
@@ -47,4 +42,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: refresh, health, beans
+        include: refresh, health, beans, env, bus-refresh
