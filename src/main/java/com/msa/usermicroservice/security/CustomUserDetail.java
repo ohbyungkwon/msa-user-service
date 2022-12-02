@@ -1,5 +1,6 @@
-package com.msa.usermicroservice.domain;
+package com.msa.usermicroservice.security;
 
+import com.msa.usermicroservice.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.Collection;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDetail implements UserDetails, Serializable {
+public class CustomUserDetail implements UserDetails, Serializable {
     private User user;
 
     @Override

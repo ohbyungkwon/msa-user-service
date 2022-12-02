@@ -2,15 +2,11 @@ package com.msa.usermicroservice.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msa.usermicroservice.domain.User;
-import com.msa.usermicroservice.domain.UserDetail;
 import com.msa.usermicroservice.dto.ResponseComDto;
 import com.msa.usermicroservice.dto.UserDto;
-import com.msa.usermicroservice.service.UserService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.SerializationUtils;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,10 +29,10 @@ import java.util.Base64;
 import java.util.Date;
 
 @Slf4j
-public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final Environment environment;
 
-    public AuthenticationFilter(AuthenticationManager authenticationManager, Environment environment) {
+    public CustomAuthenticationFilter(AuthenticationManager authenticationManager, Environment environment) {
         super(authenticationManager);
         this.environment = environment;
     }
@@ -67,8 +63,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        UserDetail userDetail = ((UserDetail) authResult.getPrincipal());
-        User user = userDetail.getUser();
+        CustomUserDetail customUserDetail = ((CustomUserDetail) authResult.getPrincipal());
+        User user = customUserDetail.getUser();
         LocalDateTime afterOneDay = LocalDateTime.now().plusDays(1);
         Instant instant = afterOneDay.toInstant(ZoneOffset.UTC);
         Date date = Date.from(instant);

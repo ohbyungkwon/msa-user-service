@@ -1,11 +1,12 @@
 package com.msa.usermicroservice.config;
 
-import com.msa.usermicroservice.security.AuthenticationFilter;
-import com.msa.usermicroservice.service.UserService;
+import com.msa.usermicroservice.security.CustomAuthenticationFilter;
+import com.msa.usermicroservice.security.CustomAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,9 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private UserService userService;
+    private final static String loginUrl = "/login";
 
+    @Autowired
+    private CustomAuthenticationProvider authenticationProvider;
     @Autowired
     private Environment environment;
 
@@ -34,15 +36,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    public AuthenticationFilter authenticationFilter() throws Exception{
-        return new AuthenticationFilter(
+    @Bean
+    public CustomAuthenticationFilter authenticationFilter() throws Exception{
+        CustomAuthenticationFilter filter =  new CustomAuthenticationFilter(
                 authenticationManagerBean(), environment);
+        filter.setFilterProcessesUrl(loginUrl);
+        return filter;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
-        super.configure(auth);
+        auth.authenticationProvider(authenticationProvider);
     }
 
     @Override
@@ -50,9 +54,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
             .authorizeRequests().antMatchers("/actuator/**").permitAll()
             .and()
+            .authorizeRequests().antMatchers(HttpMethod.POST, "/user").permitAll()
+            .and()
             .authorizeRequests().antMatchers("/user/**")
-                .permitAll()
-                .and()
-                .addFilter(authenticationFilter());
+            .authenticated()
+            .and()
+            .addFilter(authenticationFilter());
     }
 }
